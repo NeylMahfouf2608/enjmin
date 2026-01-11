@@ -7,9 +7,6 @@ class ParticleMan {
 public:
 	std::vector<Particle> parts;
 	
-
-	ParticleMan();
-
 	void add(Particle & p) {
 		parts.push_back(p);
 	}

@@ -7,6 +7,7 @@
 #include "Game.hpp"
 
 #include "HotReloadShader.hpp"
+#include "Entity.h"
 
 static int cols = C::RES_X / C::GRID_SIZE;
 static int lastLine = C::RES_Y / C::GRID_SIZE - 1;
@@ -40,6 +41,7 @@ Game::Game(sf::RenderWindow * win) {
 	walls.push_back(Vector2i(cols >>2, lastLine - 4));
 	walls.push_back(Vector2i((cols >> 2) + 1, lastLine - 4));
 	cacheWalls();
+	player = new Entity(10*C::GRID_SIZE, 10*C::GRID_SIZE);
 }
 
 void Game::cacheWalls()
@@ -79,11 +81,12 @@ void Game::pollInput(double dt) {
 	float lateralSpeed = 8.0;
 	float maxSpeed = 40.0;
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Q)) {
-
+		if(!isWall(player->cx - 1, player->cy) && !isWall(player->cx - 1, player->cy-1))
+		player->dx = -0.3;
 	}
 
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D)) {
-
+		player->dx = 0.3;
 	}
 
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space)) {
@@ -95,6 +98,8 @@ void Game::pollInput(double dt) {
 	}
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space)) {
 		if (!wasPressed) {
+			if (!isWall(player->cx, player->cy + 1))
+				player->dy = 0.1;
 			onSpacePressed();
 			wasPressed = true;
 		}
@@ -102,7 +107,6 @@ void Game::pollInput(double dt) {
 	else {
 		wasPressed = false;
 	}
-
 }
 
 static sf::VertexArray va;
@@ -125,6 +129,7 @@ void Game::update(double dt) {
 
 	beforeParts.update(dt);
 	afterParts.update(dt);
+	player->Update(*this);
 }
 
  void Game::draw(sf::RenderWindow & win) {
@@ -149,6 +154,7 @@ void Game::update(double dt) {
 	
 
 	afterParts.draw(win);
+	player->Draw(win);
 }
 
 void Game::onSpacePressed() {

@@ -13,6 +13,7 @@
 
 using namespace sf;
 
+class Entity;
 class HotReloadShader;
 class Game {
 public:
@@ -30,7 +31,7 @@ public:
 
 	ParticleMan beforeParts;
 	ParticleMan afterParts;
-
+	Entity* player;
 	Game(sf::RenderWindow * win);
 
 	void cacheWalls();

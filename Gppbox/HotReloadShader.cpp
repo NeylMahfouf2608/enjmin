@@ -83,8 +83,7 @@ void HotReloadShader::update(double dt) {
 	if (!enableHotReloading)
 		return;
 	time += dt;
-	if (time > 1) {
+	if (time > 0.2) {
 		tick();
-		time = 0;
 	}
 }
