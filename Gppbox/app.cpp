@@ -33,26 +33,26 @@ extern "C" {
 using namespace std;
 using namespace sf;
 
-static HotReloadShader * bloomShader = nullptr;
-static HotReloadShader * blurShader = nullptr;
+static HotReloadShader* bloomShader = nullptr;
+static HotReloadShader* blurShader = nullptr;
 
 static std::array<double, 60> dts;
 static int curDts = 0;
 
 int main()
 {
-    cout << "Hello World!\n";
-	
-    sf::RenderWindow window(sf::VideoMode(C::RES_X, C::RES_Y,32), "SFML works!");
-    //sf::RenderWindow window(sf::VideoMode(800, 600,32), "SFML works!");
-    //sf::RenderWindow window(sf::VideoMode(1280, 720,32), "SFML works!");
-	window.setVerticalSyncEnabled(false);
-    Font font;
+	cout << "Hello World!\n";
 
-    if (!font.loadFromFile("res/MAIAN.TTF")) {
-        cout << "ERROR NO FONT" << endl;
-        return 1;
-    }
+	sf::RenderWindow window(sf::VideoMode(C::RES_X, C::RES_Y, 32), "SFML works!");
+	//sf::RenderWindow window(sf::VideoMode(800, 600,32), "SFML works!");
+	//sf::RenderWindow window(sf::VideoMode(1280, 720,32), "SFML works!");
+	window.setVerticalSyncEnabled(false);
+	Font font;
+
+	if (!font.loadFromFile("res/MAIAN.TTF")) {
+		cout << "ERROR NO FONT" << endl;
+		return 1;
+	}
 
 	if (!sf::Shader::isAvailable())
 	{
@@ -62,7 +62,7 @@ int main()
 
 	ImGui::SFML::Init(window);
 
-    Game g(&window);
+	Game g(&window);
 
 	Vector2i winPos;
 
@@ -89,13 +89,13 @@ int main()
 
 	sf::RenderTexture* destFinal = new sf::RenderTexture();
 	destFinal->create(window.getSize().x, window.getSize().y);
-	destFinal->clear(sf::Color(0, 0, 0, 0));	
+	destFinal->clear(sf::Color(0, 0, 0, 0));
 
 	float bloomWidth = 12;
-	sf::Glsl::Vec4 bloomMul(1,1,1,0.8f);
+	sf::Glsl::Vec4 bloomMul(1, 1, 1, 0.8f);
 
-    while (window.isOpen())
-    {
+	while (window.isOpen())
+	{
 		double dt = frameEnd - frameStart;
 		frameStart = Lib::getTimeStamp();
 
@@ -103,7 +103,7 @@ int main()
 			dt = 0.00000001;
 		}
 
-        sf::Event event;
+		sf::Event event;
 		while (window.pollEvent(event))//sort un evenement de la liste pour le traiter
 		{
 			ImGui::SFML::ProcessEvent(event);
@@ -127,8 +127,8 @@ int main()
 		//don't use imgui before this;
 		ImGui::SFML::Update(window, sf::seconds((float)dt));
 
-        g.update(dt);
-		
+		g.update(dt);
+
 		if (ImGui::CollapsingHeader("View")) {
 			auto sz = v.getSize();
 			ImGui::Value("size x", sz.x);
@@ -137,7 +137,7 @@ int main()
 		if (ImGui::CollapsingHeader("App Stats", ImGuiTreeNodeFlags_::ImGuiTreeNodeFlags_DefaultOpen)) {
 			//double df = (Lib::getTimeStamp() - frameStart);
 
-			double mdt = std::accumulate(dts.begin(),dts.end(),0.0) / dts.size();
+			double mdt = std::accumulate(dts.begin(), dts.end(), 0.0) / dts.size();
 			ImGui::LabelText("Update Time", "%0.6f", dt);
 			ImGui::LabelText("FPS", "%0.6f", 1.0 / dt);
 
@@ -148,7 +148,7 @@ int main()
 			ImGui::LabelText("Avg Update Time", "%0.6f", captureMdt);
 			ImGui::LabelText("Avg FPS", "%0.6f", 1.0 / captureMdt);
 		}
-        window.clear();
+		window.clear();
 
 		window.setView(v);//keep view up to date in case we want to do something with like... you know what.
 
@@ -159,7 +159,7 @@ int main()
 		}
 		g.im();
 
-        g.draw(window);
+		g.draw(window);
 
 		window.draw(fpsCounter);
 
@@ -167,37 +167,26 @@ int main()
 		if (bloomShader) bloomShader->update(dt);
 
 		if (bloomWidth)
-			Bloom::render(window,winTex,destX,destFinal,&blurShader->sh,&bloomShader->sh, bloomWidth, bloomMul);
+			Bloom::render(window, winTex, destX, destFinal, &blurShader->sh, &bloomShader->sh, bloomWidth, bloomMul);
 
 		ImGui::SFML::Render(window);
-        window.display();
-		
+		window.display();
+
 
 		frameEnd = Lib::getTimeStamp();
-		
-		fpsCounter.setString("FPS: "+std::to_string(1.0 / dt));
-		
+
+		fpsCounter.setString("FPS: " + std::to_string(1.0 / dt));
+
 		ImGui::EndFrame();
-		
+
 		curDts++;
 		if (curDts >= dts.size()) {
 			curDts = 0;
 		}
 		dts[curDts] = dt;
-    }
+	}
 
 	ImGui::SFML::Shutdown();
 
-    return 0;
+	return 0;
 }
-
-// Exécuter le programme : Ctrl+F5 ou menu Déboguer > Exécuter sans débogage
-// Déboguer le programme : F5 ou menu Déboguer > Démarrer le débogage
-
-// Astuces pour bien démarrer : 
-//   1. Utilisez la fenêtre Explorateur de solutions pour ajouter des fichiers et les gérer.
-//   2. Utilisez la fenêtre Team Explorer pour vous connecter au contrôle de code source.
-//   3. Utilisez la fenêtre Sortie pour voir la sortie de la génération et d'autres messages.
-//   4. Utilisez la fenêtre Liste d'erreurs pour voir les erreurs.
-//   5. Accédez à Projet > Ajouter un nouvel élément pour créer des fichiers de code, ou à Projet > Ajouter un élément existant pour ajouter des fichiers de code existants au projet.
-//   6. Pour rouvrir ce projet plus tard, accédez à Fichier > Ouvrir > Projet et sélectionnez le fichier .sln.

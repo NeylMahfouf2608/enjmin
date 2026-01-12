@@ -17,22 +17,24 @@ class Entity;
 class HotReloadShader;
 class Game {
 public:
-	sf::RenderWindow*				win = nullptr;
+	sf::RenderWindow* win = nullptr;
 
 	sf::RectangleShape				bg;
-	HotReloadShader *				bgShader = nullptr;
+	HotReloadShader* bgShader = nullptr;
 
 	sf::Texture						tex;
 
 	bool							closing = false;
-	
+
 	std::vector<sf::Vector2i>		walls;
 	std::vector<sf::RectangleShape> wallSprites;
 
 	ParticleMan beforeParts;
 	ParticleMan afterParts;
 	Entity* player;
-	Game(sf::RenderWindow * win);
+	float shakeTimer = 0.0f;
+	float shakeStrength = 0.0f;
+	Game(sf::RenderWindow* win);
 
 	void cacheWalls();
 
@@ -41,10 +43,14 @@ public:
 	void pollInput(double dt);
 	void onSpacePressed();
 
+	void addShake(float amount) { shakeTimer = 0.2f; shakeStrength = amount; }
 	void update(double dt);
 
 	void draw(sf::RenderWindow& win);
 
 	bool isWall(int cx, int cy);
 	void im();
+
+	void saveLevel(const char* filename);
+	void loadLevel(const char* filename);
 };
