@@ -102,14 +102,14 @@ void Bloom::blur(float dx, sf::Texture* source, sf::Shader* _blurShader, sf::Ren
 }
 
 void Bloom::render(
-	sf::RenderWindow & window,
-	sf::Texture & winTex,
-	sf::RenderTexture * destX,
-	sf::RenderTexture * destFinal,
-	sf::Shader * blurShader,
-	sf::Shader * bloomShader,
+	sf::RenderWindow& window,
+	sf::Texture& winTex,
+	sf::RenderTexture* destX,
+	sf::RenderTexture* destFinal,
+	sf::Shader* blurShader,
+	sf::Shader* bloomShader,
 	float blurWidth,
-	const sf::Glsl::Vec4 & bloomMul
+	const sf::Glsl::Vec4& bloomMul
 )
 {
 	winTex.update(window);

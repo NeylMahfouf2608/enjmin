@@ -9,7 +9,7 @@
 #include "Game.hpp"
 
 #include "HotReloadShader.hpp"
-#include "Entity.h"
+#include "Enemy.h"
 
 static int cols = C::RES_X / C::GRID_SIZE;
 static int lastLine = C::RES_Y / C::GRID_SIZE - 1;
@@ -44,6 +44,8 @@ Game::Game(sf::RenderWindow* win) {
 	walls.push_back(Vector2i((cols >> 2) + 1, lastLine - 4));
 	cacheWalls();
 	player = new Entity(10, 10);
+	enemies.push_back(new Enemy(15, 10));
+	enemies.push_back(new Enemy(22, 5));
 }
 
 void Game::cacheWalls()
@@ -112,6 +114,67 @@ void Game::pollInput(double dt) {
 	else {
 		wasPressed = false;
 	}
+
+
+	if (sf::Mouse::isButtonPressed(sf::Mouse::Left) && !ImGui::GetIO().WantCaptureMouse) {
+		static float shootCooldown = 0.0f;
+		if (shootCooldown <= 0.0f) {
+			shootCooldown = 0.2f;
+
+			sf::Vector2i mousePos = sf::Mouse::getPosition(*win);
+			sf::Vector2f worldPos = win->mapPixelToCoords(mousePos);
+
+			int targetX = (int)(worldPos.x / C::GRID_SIZE);
+			int targetY = (int)(worldPos.y / C::GRID_SIZE);
+
+			float kickback = 10.0f;
+			if (worldPos.x > player->cx * C::GRID_SIZE)
+				player->dx -= kickback;
+			else
+				player->dx += kickback;
+
+			addShake(5.0f);
+
+			auto line = Bresenham(player->cx, player->cy, targetX, targetY);
+
+			sf::Vector2i impactPoint = sf::Vector2i(targetX, targetY);
+
+			for (auto& p : line) {
+				if (isWall(p.x, p.y)) {
+					impactPoint = p;
+					break;
+				}
+
+				for (auto it = enemies.begin(); it != enemies.end(); ) {
+					Enemy* e = *it;
+					if (e->cx == p.x && e->cy == p.y) {
+						impactPoint = p;
+
+						freeze(0.05f);
+						addShake(10.0f);
+
+						delete e;
+						it = enemies.erase(it);
+						goto hit_resolu;
+					}
+					else {
+						++it;
+					}
+				}
+			}
+		hit_resolu:;
+
+			laserBeam.clear();
+			sf::Vector2f start((player->cx + 0.5f) * C::GRID_SIZE, (player->cy + 0.5f) * C::GRID_SIZE);
+			sf::Vector2f end((impactPoint.x + 0.5f) * C::GRID_SIZE, (impactPoint.y + 0.5f) * C::GRID_SIZE);
+
+			laserBeam.append(sf::Vertex(start, sf::Color::Red));
+			laserBeam.append(sf::Vertex(end, sf::Color::Red));
+
+			laserTimer = 0.1f;
+		}
+		shootCooldown -= dt;
+	}
 }
 
 static sf::VertexArray va;
@@ -127,6 +190,12 @@ int blendModeIndex(sf::BlendMode bm) {
 };
 
 void Game::update(double dt) {
+	if (hitStopTimer > 0)
+	{
+		hitStopTimer -= dt;
+		if (hitStopTimer < 0)  hitStopTimer = 0;
+		dt = 0.0;
+	}
 	pollInput(dt);
 	if (shakeTimer > 0) {
 		shakeTimer -= dt;
@@ -138,6 +207,9 @@ void Game::update(double dt) {
 	beforeParts.update(dt);
 	afterParts.update(dt);
 	player->Update(*this, dt);
+	for (Enemy* e : enemies) {
+		e->UpdateAI(*this, dt, player);
+	}
 }
 
 void Game::draw(sf::RenderWindow& win) {
@@ -170,8 +242,21 @@ void Game::draw(sf::RenderWindow& win) {
 	for (sf::RectangleShape& r : rects)
 		win.draw(r);
 
+	if (laserTimer > 0) {
+		win.draw(laserBeam);
+	}
+	if (laserTimer > 0.05f) {
+		sf::CircleShape muzzle(8);
+		muzzle.setFillColor(sf::Color::Yellow);
+		muzzle.setPosition((player->cx + player->xr) * C::GRID_SIZE, (player->cy + player->yr) * C::GRID_SIZE);
+		win.draw(muzzle);
+	}
+
 
 	afterParts.draw(win);
+	for (Enemy* e : enemies) {
+		e->Draw(win);
+	}
 	player->Draw(win);
 
 	if (shakeTimer > 0) {
@@ -263,4 +348,28 @@ void Game::loadLevel(const char* filename) {
 		cacheWalls();
 		std::cout << "Niveau charge !" << std::endl;
 	}
+}
+
+std::vector<sf::Vector2i> Bresenham(int x0, int y0, int x1, int y1) {
+	std::vector<sf::Vector2i> line;
+	int dx = std::abs(x1 - x0);
+	int dy = -std::abs(y1 - y0);
+	int sx = x0 < x1 ? 1 : -1;
+	int sy = y0 < y1 ? 1 : -1;
+	int err = dx + dy;
+
+	while (true) {
+		line.push_back(sf::Vector2i(x0, y0));
+		if (x0 == x1 && y0 == y1) break;
+		int e2 = 2 * err;
+		if (e2 >= dy) {
+			err += dy;
+			x0 += sx;
+		}
+		if (e2 <= dx) {
+			err += dx;
+			y0 += sy;
+		}
+	}
+	return line;
 }
