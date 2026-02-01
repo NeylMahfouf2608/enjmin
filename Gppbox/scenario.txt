@@ -1,0 +1,14 @@
+SYSTEME 0 255 0
+Connexion etablie...
+HEROS 0 255 255
+Ou suis-je ? Il fait si sombre...
+IA 255 0 0
+Attention. Entites hostiles detectees.
+HEROS 0 255 255
+Je dois trouver une sortie. Et vite.
+SYSTEME 0 255 0
+Initialisation de l'arme... Pret.
+TUTORIEL 255 255 255
+Utilisez Q/D pour bouger, ESPACE pour sauter.
+TUTORIEL 255 255 255
+CLIC GAUCHE pour tirer, CLIC DROIT pour les missiles.

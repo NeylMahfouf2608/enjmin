@@ -91,7 +91,7 @@ int main()
 	destFinal->create(window.getSize().x, window.getSize().y);
 	destFinal->clear(sf::Color(0, 0, 0, 0));
 
-	float bloomWidth = 12;
+	float bloomWidth = 0;
 	sf::Glsl::Vec4 bloomMul(1, 1, 1, 0.8f);
 
 	while (window.isOpen())
@@ -104,7 +104,7 @@ int main()
 		}
 
 		sf::Event event;
-		while (window.pollEvent(event))//sort un evenement de la liste pour le traiter
+		while (window.pollEvent(event))
 		{
 			ImGui::SFML::ProcessEvent(event);
 			g.processInput(event);
@@ -150,7 +150,7 @@ int main()
 		}
 		window.clear();
 
-		window.setView(v);//keep view up to date in case we want to do something with like... you know what.
+		//window.setView(v);//keep view up to date in case we want to do something with like... you know what.
 
 		if (ImGui::CollapsingHeader("Bloom Control")) {
 			ImGui::SliderFloat("bloomWidth", &bloomWidth, 0, 55);//55 is max acceptable kernel size for constants, otherwise we should use a texture
@@ -165,7 +165,7 @@ int main()
 
 		if (blurShader) blurShader->update(dt);
 		if (bloomShader) bloomShader->update(dt);
-
+		window.setView(window.getDefaultView());
 		if (bloomWidth)
 			Bloom::render(window, winTex, destX, destFinal, &blurShader->sh, &bloomShader->sh, bloomWidth, bloomMul);
 
